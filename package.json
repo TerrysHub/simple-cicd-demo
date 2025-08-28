@@ -1,0 +1,19 @@
+{
+  "name": "simple-cicd-demo",
+  "version": "1.0.0",
+  "description": "CI/CD Demo Application",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "jest",
+    "build": "echo 'Building application...'",
+    "serve": "npx http-server src -p 3000"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "http-server": "^14.1.1"
+  }
+}

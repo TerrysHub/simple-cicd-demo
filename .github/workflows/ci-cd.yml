@@ -1,0 +1,67 @@
+name: CI/CD Pipeline
+
+# 觸發條件
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# 定義工作流程
+jobs:
+  # CI階段：測試和建置
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout程式碼
+      uses: actions/checkout@v3
+    
+    - name: 🔧 設定Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: 📦 安裝依賴
+      run: npm install
+    
+    - name: 🧪 執行測試
+      run: npm test
+    
+    - name: 🏗️ 建置應用
+      run: npm run build
+
+  # Docker建置階段
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: 📥 Checkout程式碼
+      uses: actions/checkout@v3
+    
+    - name: 🐳 建置Docker映像
+      run: |
+        docker build -t simple-cicd-demo:latest .
+        docker run --name test-container -d -p 3000:3000 simple-cicd-demo:latest
+        sleep 5
+        docker logs test-container
+        docker stop test-container
+        docker rm test-container
+
+  # CD階段：部署到GitHub Pages
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, docker-build]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout程式碼
+      uses: actions/checkout@v3
+    
+    - name: 🚀 部署到GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./src
